@@ -22,6 +22,7 @@ import java.net.Proxy;
 
 public class Client {
     private boolean canCheckClique=true;
+    private long startTime;
 
 	public Client(String name,String password){
         MinecraftProtocol protocol = new MinecraftProtocol(name);
@@ -34,6 +35,12 @@ public class Client {
             public void packetReceived(PacketReceivedEvent event) {
                 MinecraftPacket packet=event.getPacket();
                 Session session=event.getSession();
+                //timeout check
+                if((System.currentTimeMillis()-startTime)>Reg.getMaxTime()){
+                    Reg.getLogger().warn(name+" timed out");
+                    client.getSession().disconnect("timed out");
+                    Reg.getRegisterQueue().remove(name);
+                }
                 //bypass antibot
                 if(packet instanceof ServerSetSlotPacket){
                     ServerSetSlotPacket setSlotPacket=(ServerSetSlotPacket) packet;
@@ -60,12 +67,15 @@ public class Client {
                         String title=message.getText();
                         Reg.getLogger().warn(title);
                         if(title.contains("/login")){
+                            Reg.getRegisterQueue().remove(name);
                             Reg.getLogger().warn(name+" got registered :sadface:");
-                            client.getSession().disconnect("LOL");
-                        }else{
+                            client.getSession().disconnect("registered");
+                        }else if(title.contains("/register")){
                             session.send(new ClientChatPacket("/register "+password+" "+password));
                             Reg.getRegisterLog().addAccount(name,password);
+//                            Reg.getRegisterQueue().remove(name);
                             Reg.getLogger().info(name+" register complete!");
+                            System.gc();
                         }
                     }
                 }
@@ -73,11 +83,13 @@ public class Client {
 
             @Override
             public void disconnected(DisconnectedEvent event) {
+                Reg.getRegisterQueue().remove(name);
                 Reg.getLogger().warn("Disconnected: " + Message.fromString(event.getReason()).getFullText());
             }
         });
 
         Reg.getLogger().warn("connecting to server(id="+name+", passwd="+password+")");
+        startTime=System.currentTimeMillis();
         client.getSession().connect();
         Reg.getLogger().warn("connected(id="+name+", passwd="+password+")");
 	}
