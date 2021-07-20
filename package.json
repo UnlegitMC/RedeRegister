@@ -1,0 +1,20 @@
+{
+  "name": "rede-register",
+  "version": "2.0.0",
+  "description": "Allow you register redesky accounts faster",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/UnlegitMC/RedeRegister",
+  "keywords": [
+    "Electron",
+    "RedeSky",
+    "Account"
+  ],
+  "author": "UnlegitMC",
+  "license": "GPLv3",
+  "devDependencies": {
+    "electron": "^13.1.7"
+  }
+}
